@@ -27,19 +27,22 @@
     
     <div class="data">S: <span id="p_val">0.0</span>° | F: <span id="r_val">0.0</span>°</div>
     
-   <div class="grid">
-    <button class="btn" onpointerdown="send('M0_UP')" onpointerup="send('STOP')">V-Links ▲</button>
-    <button class="btn" onpointerdown="send('M1_UP')" onpointerup="send('STOP')">V-Rechts ▲</button>
-    <button class="btn" onpointerdown="send('M2_UP')" onpointerup="send('STOP')">H-Links ▲</button>
-    <button class="btn" onpointerdown="send('M3_UP')" onpointerup="send('STOP')">H-Rechts ▲</button>
+<div class="grid">
+    <button class="btn" onpointerdown="send('M0_UP')" onpointerup="send('STOP')">V-L ▲</button>
+    <button class="btn" onpointerdown="send('M0_DN')" onpointerup="send('STOP')">V-L ▼</button>
     
-    <button class="btn btn-main" onclick="send('AUTO')">AUTO LEVEL START</button>
+    <button class="btn" onpointerdown="send('M1_UP')" onpointerup="send('STOP')">V-R ▲</button>
+    <button class="btn" onpointerdown="send('M1_DN')" onpointerup="send('STOP')">V-R ▼</button>
     
-    <button class="btn" style="background:#400; grid-column: span 2;" onclick="if(confirm('Alle Stützen einfahren?')) send('RETRACT')">ALLE EINFAHREN (Down)</button>
+    <button class="btn" onpointerdown="send('M2_UP')" onpointerup="send('STOP')">H-L ▲</button>
+    <button class="btn" onpointerdown="send('M2_DN')" onpointerup="send('STOP')">H-L ▼</button>
     
-    <button class="btn" style="border-color:orange; color:orange; grid-column: span 2; margin-top:10px;" onclick="if(confirm('Aktuelle Lage als Nullpunkt speichern?')) send('CALIB')">NULLPUNKT KALIBRIEREN</button>
+    <button class="btn" onpointerdown="send('M3_UP')" onpointerup="send('STOP')">H-R ▲</button>
+    <button class="btn" onpointerdown="send('M3_DN')" onpointerup="send('STOP')">H-R ▼</button>
     
-    <button class="btn btn-danger" onclick="send('STOP')">NOT-STOPP</button>
+    <button class="btn btn-main" onclick="send('AUTO')">AUTO LEVEL</button>
+    <button class="btn" style="background:#400; grid-column: span 2;" onclick="send('RETRACT')">ALLE EINFAHREN</button>
+    <button class="btn" style="border-color:orange; color:orange; grid-column: span 2;" onclick="if(confirm('Nullpunkt setzen?')) send('CALIB')">NULLPUNKT SPEICHERN</button>
 </div>
 
     <script>
@@ -97,3 +100,4 @@
 </body>
 
 </html>
+
