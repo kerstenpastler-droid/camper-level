@@ -50,7 +50,7 @@
 
         let charData, charCtrl;
 
-        async function connect() {
+async function connect() {
             try {
                 const device = await navigator.bluetooth.requestDevice({
                     filters: [{ namePrefix: 'Camper' }],
@@ -58,20 +58,32 @@
                 });
                 const server = await device.gatt.connect();
                 const service = await server.getPrimaryService(SERVICE_UUID);
-                charData = await service.getCharacteristic(CHAR_DATA_UUID);
-                charCtrl = await service.getCharacteristic(CHAR_CTRL_UUID);
                 
-                document.getElementById('stat').innerText = "VERBUNDEN";
-                charData.startNotifications();
-                charData.addEventListener('characteristicvaluechanged', (e) => {
-                    let val = new TextDecoder().decode(e.target.value);
-                    let p = parseFloat(val.split(';')[0].split(':')[1]);
-                    let r = parseFloat(val.split(';')[1].split(':')[1]);
-                    document.getElementById('p_val').innerText = p.toFixed(1);
-                    document.getElementById('r_val').innerText = r.toFixed(1);
-                    document.getElementById('bubble').style.left = (92 + (p * 12)) + "px";
-                    document.getElementById('bubble').style.top = (92 + (r * 12)) + "px";
+                // Wir holen uns ALLE Charakteristiken des Service, um den Cache zu erzwingen
+                const characteristics = await service.getCharacteristics();
+                
+                characteristics.forEach(c => {
+                    if (c.uuid.toLowerCase() === CHAR_DATA_UUID.toLowerCase()) charData = c;
+                    if (c.uuid.toLowerCase() === CHAR_CTRL_UUID.toLowerCase()) charCtrl = c;
                 });
+
+                if (charCtrl && charData) {
+                    document.getElementById('stat').innerText = "VOLLSTÄNDIG VERBUNDEN";
+                    document.getElementById('stat').style.color = "var(--green)";
+                    
+                    charData.startNotifications();
+                    charData.addEventListener('characteristicvaluechanged', (e) => {
+                        let val = new TextDecoder().decode(e.target.value);
+                        let p = parseFloat(val.split(';')[0].split(':')[1]);
+                        let r = parseFloat(val.split(';')[1].split(':')[1]);
+                        document.getElementById('p_val').innerText = p.toFixed(1);
+                        document.getElementById('r_val').innerText = r.toFixed(1);
+                        document.getElementById('bubble').style.left = (92 + (p * 12)) + "px";
+                        document.getElementById('bubble').style.top = (92 + (r * 12)) + "px";
+                    });
+                } else {
+                    alert("Kontroll-Kanal nicht gefunden! UUIDs prüfen.");
+                }
             } catch (err) { alert("Fehler: " + err); }
         }
 
@@ -93,3 +105,4 @@
     </script>
 </body>
 </html>
+
