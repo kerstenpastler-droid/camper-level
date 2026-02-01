@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Camper Remote Control</title>
+    <style>
+        :root { --neon-blue: #00d2ff; --neon-green: #39ff14; --danger: #ff3131; --bg: #0a0a0a; }
+        body { font-family: sans-serif; background: var(--bg); color: white; margin: 0; display: flex; flex-direction: column; align-items: center; -webkit-user-select: none; }
+        .status-bar { width: 100%; background: #111; padding: 10px; font-size: 0.8em; text-align: center; border-bottom: 1px solid #222; color: #666; }
+        #bubble-container { width: 220px; height: 220px; border: 3px solid #333; border-radius: 50%; margin: 20px auto; position: relative; background: radial-gradient(circle, #1a1a1a, #000); }
+        #bubble { width: 35px; height: 35px; background: var(--neon-green); border-radius: 50%; position: absolute; top: 92px; left: 92px; transition: 0.1s; box-shadow: 0 0 15px var(--neon-green); }
+        .data { font-size: 1.5em; margin-bottom: 20px; color: var(--neon-blue); font-family: monospace; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 90%; max-width: 400px; }
+        .btn { background: #1a1a1a; border: 1px solid #333; color: white; padding: 15px; border-radius: 10px; font-weight: bold; touch-action: manipulation; }
+        .btn:active { background: #333; box-shadow: 0 0 10px var(--neon-blue); }
+        .btn-main { background: #004455; border-color: var(--neon-blue); grid-column: span 2; }
+    </style>
+</head>
+<body>
+    <div class="status-bar" id="stat">GERÄT BEREIT</div>
+    <button class="btn btn-main" style="margin: 10px; width:90%;" onclick="connect()">VERBINDEN</button>
+    <div id="bubble-container"><div id="bubble"></div></div>
+    <div class="data">S: <span id="p_val">0.0</span>° | F: <span id="r_val">0.0</span>°</div>
+    <div class="grid">
+        <button class="btn" onpointerdown="send('M0_UP')" onpointerup="send('STOP')">V-Links ▲</button>
+        <button class="btn" onpointerdown="send('M1_UP')" onpointerup="send('STOP')">V-Rechts ▲</button>
+        <button class="btn" onpointerdown="send('M2_UP')" onpointerup="send('STOP')">H-Links ▲</button>
+        <button class="btn" onpointerdown="send('M3_UP')" onpointerup="send('STOP')">H-Rechts ▲</button>
+        <button class="btn btn-main" onclick="send('AUTO')">AUTO LEVEL</button>
+        <button class="btn" style="background:#400; grid-column: span 2;" onclick="send('RETRACT')">ALLE EINFAHREN</button>
+        <button class="btn" style="border-color:orange; color:orange; grid-column: span 2;" onclick="if(confirm('Nullpunkt setzen?')) send('CALIB')">NULLPUNKT SPEICHERN</button>
+    </div>
+
+    <script>
+        // DIE LOKALEN UUIDS MÜSSEN KLEINGESCHRIEBEN SEIN
+        const SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+        const CHAR_DATA_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
+        const CHAR_CTRL_UUID = "d2748e61-9c16-419b-a01c-6d9b4b4458f4";
+
+        let charData, charCtrl;
+
+        async function connect() {
+            try {
+                const device = await navigator.bluetooth.requestDevice({
+                    filters: [{ namePrefix: 'Camper' }],
+                    optionalServices: [SERVICE_UUID]
+                });
+                const server = await device.gatt.connect();
+                const service = await server.getPrimaryService(SERVICE_UUID);
+                charData = await service.getCharacteristic(CHAR_DATA_UUID);
+                charCtrl = await service.getCharacteristic(CHAR_CTRL_UUID);
+                
+                document.getElementById('stat').innerText = "VERBUNDEN";
+                charData.startNotifications();
+                charData.addEventListener('characteristicvaluechanged', (e) => {
+                    let val = new TextDecoder().decode(e.target.value);
+                    let p = parseFloat(val.split(';')[0].split(':')[1]);
+                    let r = parseFloat(val.split(';')[1].split(':')[1]);
+                    document.getElementById('p_val').innerText = p.toFixed(1);
+                    document.getElementById('r_val').innerText = r.toFixed(1);
+                    document.getElementById('bubble').style.left = (92 + (p * 12)) + "px";
+                    document.getElementById('bubble').style.top = (92 + (r * 12)) + "px";
+                });
+            } catch (err) { alert("Fehler: " + err); }
+        }
+
+        async function send(msg) {
+            if (charCtrl) {
+                await charCtrl.writeValue(new TextEncoder().encode(msg));
+            }
+        }
+    </script>
+</body>
+</html>
