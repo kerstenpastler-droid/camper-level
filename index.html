@@ -90,14 +90,27 @@
         }
 
         async function send(msg) {
-            if (charCtrl) {
-                try {
-                    await charCtrl.writeValue(new TextEncoder().encode(msg));
-                } catch (e) { console.log("Senden fehlgeschlagen"); }
-            }
+    if (!charCtrl) {
+        console.error("Nicht verbunden!");
+        return;
+    }
+    
+    let data = new TextEncoder().encode(msg);
+    try {
+        // Versuch 1: Standard
+        await charCtrl.writeValue(data);
+    } catch (err) {
+        try {
+            // Versuch 2: Ohne Rückmeldung (oft stabiler auf Android)
+            await charCtrl.writeValueWithoutResponse(data);
+        } catch (err2) {
+            alert("Senden fehlgeschlagen: " + err2);
         }
+    }
+}
     </script>
 </body>
 
 </html>
+
 
