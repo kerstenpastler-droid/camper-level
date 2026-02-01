@@ -26,20 +26,13 @@
     <div class="data">P: <span id="p_val">0.0</span>° | R: <span id="r_val">0.0</span>°</div>
     
     <div class="grid">
-        <button class="btn" onpointerdown="send('M0_UP')" onpointerup="send('STOP')">V-Links ▲</button>
-        <button class="btn" onpointerdown="send('M1_UP')" onpointerup="send('STOP')">V-Rechts ▲</button>
-        <button class="btn" onpointerdown="send('M2_UP')" onpointerup="send('STOP')">H-Links ▲</button>
-        <button class="btn" onpointerdown="send('M3_UP')" onpointerup="send('STOP')">H-Rechts ▲</button>
-        
-        <button class="btn btn-main" onclick="send('AUTO')">AUTO LEVEL START</button>
-        <button class="btn" style="background:#400; grid-column: span 2;" onclick="if(confirm('Alle Stützen einfahren?')) send('RETRACT')">ALLE EINFAHREN</button>
-        <button class="btn" style="border-color:orange; color:orange; grid-column: span 2; font-size: 0.7em;" onclick="if(confirm('Lage kalibrieren?')) send('CALIB')">NULLPUNKT SETZEN</button>
-        <button class="btn btn-danger" onclick="send('STOP')">NOT-STOPP</button>
+        <button class="btn" onclick="send('M0_UP')">TEST MOTOR 0</button>
+        <button class="btn" onclick="send('STOP')">STOP</button>
     </div>
 
     <script>
-        const SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
-        const CHAR_COM_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a9";
+        const SERVICE_UUID  = "12345678-1234-1234-1234-123456789012";
+        const CHAR_COM_UUID = "87654321-4321-4321-4321-210987654321";
 
         let charCom;
 
@@ -90,4 +83,5 @@
     </script>
 </body>
 </html>
+
 
