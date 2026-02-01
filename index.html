@@ -88,23 +88,25 @@
                 console.error(err);
             }
         }
-
-        async function send(msg) {
+async function send(msg) {
     if (!charCtrl) {
-        console.error("Nicht verbunden!");
+        console.log("KONTROLL-CHAR NICHT GEFUNDEN");
         return;
     }
     
-    let data = new TextEncoder().encode(msg);
+    const encoder = new TextEncoder();
+    const data = encoder.encode(msg);
+
     try {
-        // Versuch 1: Standard
-        await charCtrl.writeValue(data);
-    } catch (err) {
+        // Wir versuchen beide Arten kurz hintereinander, falls eine blockiert wird
+        console.log("Sende: " + msg);
+        await charCtrl.writeValueWithResponse(data);
+    } catch (e) {
+        console.log("Versuche alternative Sendemethode...");
         try {
-            // Versuch 2: Ohne Rückmeldung (oft stabiler auf Android)
             await charCtrl.writeValueWithoutResponse(data);
-        } catch (err2) {
-            alert("Senden fehlgeschlagen: " + err2);
+        } catch (e2) {
+            console.error("Beide Sendemethoden gescheitert:", e2);
         }
     }
 }
@@ -112,5 +114,6 @@
 </body>
 
 </html>
+
 
 
