@@ -3,106 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Camper Control Pro</title>
+    <title>Camper Remote Pro</title>
     <style>
         :root { --blue: #00d2ff; --green: #39ff14; --red: #ff3131; --bg: #0a0a0a; }
         body { font-family: sans-serif; background: var(--bg); color: white; margin: 0; display: flex; flex-direction: column; align-items: center; -webkit-user-select: none; }
-        .status { width: 100%; background: #111; padding: 10px; font-size: 0.8em; text-align: center; border-bottom: 1px solid #222; color: #888; }
-        #bubble-container { width: 220px; height: 220px; border: 3px solid #333; border-radius: 50%; margin: 20px auto; position: relative; background: radial-gradient(circle, #1a1a1a, #000); }
-        #bubble { width: 35px; height: 35px; background: var(--green); border-radius: 50%; position: absolute; top: 92px; left: 92px; transition: 0.1s; box-shadow: 0 0 15px var(--green); }
-        .data { font-size: 1.5em; margin-bottom: 20px; color: var(--blue); font-family: monospace; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 90%; max-width: 400px; padding-bottom: 30px; }
-        .btn { background: #1a1a1a; border: 1px solid #333; color: white; padding: 18px; border-radius: 10px; font-weight: bold; touch-action: manipulation; }
-        .btn:active { background: #333; border-color: var(--blue); }
-        .btn-main { background: #004455; border-color: var(--blue); grid-column: span 2; }
+        .status { width: 100%; background: #111; padding: 10px; font-size: 0.8em; text-align: center; border-bottom: 1px solid #222; color: #888; letter-spacing: 1px; }
+        #bubble-container { width: 220px; height: 220px; border: 3px solid #333; border-radius: 50%; margin: 20px auto; position: relative; background: radial-gradient(circle, #1a1a1a, #000); box-shadow: inset 0 0 20px #000; }
+        #bubble { width: 35px; height: 35px; background: var(--green); border-radius: 50%; position: absolute; top: 92px; left: 92px; transition: 0.1s ease-out; box-shadow: 0 0 15px var(--green); opacity: 0.9; }
+        .data { font-size: 1.6em; margin-bottom: 20px; color: var(--blue); font-family: monospace; font-weight: bold; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 90%; max-width: 400px; padding-bottom: 40px; }
+        .btn { background: #1a1a1a; border: 1px solid #333; color: #eee; padding: 20px; border-radius: 12px; font-weight: bold; font-size: 0.9em; touch-action: manipulation; }
+        .btn:active { background: #333; border-color: var(--blue); box-shadow: 0 0 10px var(--blue); }
+        .btn-main { background: #003344; border-color: var(--blue); color: var(--blue); grid-column: span 2; }
         .btn-danger { border-color: var(--red); color: var(--red); grid-column: span 2; }
     </style>
 </head>
 <body>
     <div class="status" id="stat">BEREIT ZUM KOPPELN</div>
-    <button class="btn btn-main" style="margin: 15px; width:90%;" onclick="connect()">VERBINDEN</button>
+    <button class="btn btn-main" style="margin: 15px; width: 90%;" onclick="connect()">VERBINDUNG STARTEN</button>
     
     <div id="bubble-container"><div id="bubble"></div></div>
     <div class="data">P: <span id="p_val">0.0</span>° | R: <span id="r_val">0.0</span>°</div>
     
     <div class="grid">
         <button class="btn" onpointerdown="send('M0_UP')" onpointerup="send('STOP')">V-Links ▲</button>
-        <button class="btn" onpointerdown="send('M0_DN')" onpointerup="send('STOP')">V-Links ▼</button>
-        
         <button class="btn" onpointerdown="send('M1_UP')" onpointerup="send('STOP')">V-Rechts ▲</button>
-        <button class="btn" onpointerdown="send('M1_DN')" onpointerup="send('STOP')">V-Rechts ▼</button>
-        
         <button class="btn" onpointerdown="send('M2_UP')" onpointerup="send('STOP')">H-Links ▲</button>
-        <button class="btn" onpointerdown="send('M2_DN')" onpointerup="send('STOP')">H-Links ▼</button>
-        
         <button class="btn" onpointerdown="send('M3_UP')" onpointerup="send('STOP')">H-Rechts ▲</button>
-        <button class="btn" onpointerdown="send('M3_DN')" onpointerup="send('STOP')">H-Rechts ▼</button>
         
         <button class="btn btn-main" onclick="send('AUTO')">AUTO LEVEL START</button>
-        <button class="btn btn-danger" onclick="send('RETRACT')">ALLE EINFAHREN</button>
-        <button class="btn" style="border-color:orange; color:orange; grid-column: span 2; font-size: 0.8em;" onclick="if(confirm('Nullpunkt setzen?')) send('CALIB')">NULLPUNKT SPEICHERN</button>
+        <button class="btn" style="background:#400; grid-column: span 2;" onclick="if(confirm('Alle Stützen einfahren?')) send('RETRACT')">ALLE EINFAHREN</button>
+        <button class="btn" style="border-color:orange; color:orange; grid-column: span 2; font-size: 0.7em;" onclick="if(confirm('Lage kalibrieren?')) send('CALIB')">NULLPUNKT SETZEN</button>
+        <button class="btn btn-danger" onclick="send('STOP')">NOT-STOPP</button>
     </div>
 
     <script>
         const SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
-        const CHAR_DATA_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
-        const CHAR_CTRL_UUID = "d2748e61-9c16-419b-a01c-6d9b4b4458f4";
+        const CHAR_COM_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
 
-        let charData, charCtrl;
+        let charCom;
 
-async function connect() {
+        async function connect() {
             try {
                 const device = await navigator.bluetooth.requestDevice({
                     filters: [{ namePrefix: 'Camper' }],
                     optionalServices: [SERVICE_UUID]
                 });
+                
                 const server = await device.gatt.connect();
                 const service = await server.getPrimaryService(SERVICE_UUID);
+                charCom = await service.getCharacteristic(CHAR_COM_UUID);
                 
-                // Wir holen uns ALLE Charakteristiken des Service, um den Cache zu erzwingen
-                const characteristics = await service.getCharacteristics();
-                
-                characteristics.forEach(c => {
-                    if (c.uuid.toLowerCase() === CHAR_DATA_UUID.toLowerCase()) charData = c;
-                    if (c.uuid.toLowerCase() === CHAR_CTRL_UUID.toLowerCase()) charCtrl = c;
-                });
+                document.getElementById('stat').innerText = "VERBUNDEN";
+                document.getElementById('stat').style.color = "var(--green)";
 
-                if (charCtrl && charData) {
-                    document.getElementById('stat').innerText = "VOLLSTÄNDIG VERBUNDEN";
-                    document.getElementById('stat').style.color = "var(--green)";
+                // Benachrichtigungen für Libellen-Daten starten
+                charCom.startNotifications();
+                charCom.addEventListener('characteristicvaluechanged', (e) => {
+                    let val = new TextDecoder().decode(e.target.value);
+                    let parts = val.split(';');
+                    let p = parseFloat(parts[0].split(':')[1]);
+                    let r = parseFloat(parts[1].split(':')[1]);
                     
-                    charData.startNotifications();
-                    charData.addEventListener('characteristicvaluechanged', (e) => {
-                        let val = new TextDecoder().decode(e.target.value);
-                        let p = parseFloat(val.split(';')[0].split(':')[1]);
-                        let r = parseFloat(val.split(';')[1].split(':')[1]);
-                        document.getElementById('p_val').innerText = p.toFixed(1);
-                        document.getElementById('r_val').innerText = r.toFixed(1);
-                        document.getElementById('bubble').style.left = (92 + (p * 12)) + "px";
-                        document.getElementById('bubble').style.top = (92 + (r * 12)) + "px";
-                    });
-                } else {
-                    alert("Kontroll-Kanal nicht gefunden! UUIDs prüfen.");
-                }
-            } catch (err) { alert("Fehler: " + err); }
+                    document.getElementById('p_val').innerText = p.toFixed(1);
+                    document.getElementById('r_val').innerText = r.toFixed(1);
+                    
+                    // Libelle zentrieren (92px ist Mitte)
+                    document.getElementById('bubble').style.left = (92 + (p * 12)) + "px";
+                    document.getElementById('bubble').style.top = (92 + (r * 12)) + "px";
+                });
+            } catch (err) { 
+                alert("Fehler: " + err);
+            }
         }
 
         async function send(msg) {
-            if (!charCtrl) return;
-            let data = new TextEncoder().encode(msg);
-            try {
-                // Erster Versuch: Mit Response
-                await charCtrl.writeValueWithResponse(data);
-            } catch (e) {
-                // Zweiter Versuch: Ohne Response (wichtig für viele Android-Geräte)
+            if (charCom) {
                 try {
-                    await charCtrl.writeValueWithoutResponse(data);
-                } catch (e2) {
-                    console.error("Senden fehlgeschlagen", e2);
+                    // Auf derselben Charakteristik schreiben
+                    await charCom.writeValueWithoutResponse(new TextEncoder().encode(msg));
+                } catch (e) {
+                    console.log("Senden fehlgeschlagen");
                 }
             }
         }
     </script>
 </body>
 </html>
-
